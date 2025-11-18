@@ -1,31 +1,508 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="main.js"></script>
-   
-    <title>Bem Vindo</title>
+    <title>Dashboard de Chamados - Novembro 2025</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.9;
+        }
+        
+        .dashboard-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-title {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-fechado {
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+        
+        .status-pendente {
+            background-color: #fff3e0;
+            color: var(--warning);
+        }
+        
+        .status-atendimento {
+            background-color: #e3f2fd;
+            color: var(--secondary);
+        }
+        
+        .priority-high {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .priority-medium {
+            color: var(--warning);
+            font-weight: 600;
+        }
+        
+        .priority-low {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: var(--dark);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .charts-grid, .tables-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid .chart-container, .tables-grid .table-container {
+                min-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <section class="area-login">
-         <div class="login">
-            <div>
-                <img src="imagens/logo.png" alt="">
+    <header class="dashboard-header">
+        <h1>Dashboard de Chamados de TI</h1>
+        <p>Análise de desempenho e métricas - Novembro 2025</p>
+    </header>
+    
+    <div class="dashboard-container">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-label">Total de Chamados</span>
+                <div class="metric-value">86</div>
+                <div class="metric-trend trend-up">
+                    <span>+12% vs. outubro</span>
+                </div>
             </div>
+            
+            <div class="metric-card">
+                <span class="metric-label">Taxa de Resolução</span>
+                <div class="metric-value">92%</div>
+                <div class="metric-trend trend-up">
+                    <span>+5% vs. outubro</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <span class="metric-label">Tempo Médio de Resolução</span>
+                <div class="metric-value">18h</div>
+                <div class="metric-trend trend-down">
+                    <span>-2h vs. outubro</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <span class="metric-label">Chamados em Aberto</span>
+                <div class="metric-value">7</div>
+                <div class="metric-trend trend-up">
+                    <span>+2 vs. outubro</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Chamados por Status</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Chamados por Categoria</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Chamados por Técnico</h3>
+                <canvas id="technicianChart"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Evolução de Chamados ao Longo do Mês</h3>
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="tables-grid">
+            <div class="table-container">
+                <h3 class="chart-title">Chamados em Aberto</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Técnico</th>
+                            <th>Status</th>
+                            <th>Prioridade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>186</td>
+                            <td>IMPRESSÃO DE AGENDA / RELATORIO DE AGENDA</td>
+                            <td>Gabriel Marques</td>
+                            <td><span class="status-badge status-pendente">Pendente</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>227</td>
+                            <td>lançamento automatico</td>
+                            <td>Gabriel Marques</td>
+                            <td><span class="status-badge status-pendente">Pendente</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>237</td>
+                            <td>CONTA NÃO LOCALIZADA PARA FATURAR</td>
+                            <td>Gabriel Marques</td>
+                            <td><span class="status-badge status-atendimento">Em atendimento</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>242</td>
+                            <td>MENSAGEM DE ERRO</td>
+                            <td>Oliveira Mateus</td>
+                            <td><span class="status-badge status-atendimento">Em atendimento</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>215</td>
+                            <td>LANÇAMENTO EM CONTAS</td>
+                            <td>Oliveira Mateus</td>
+                            <td><span class="status-badge status-pendente">Pendente</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>241</td>
+                            <td>Acesso aos formulários de Justificativa</td>
+                            <td>Oliveira Mateus</td>
+                            <td><span class="status-badge status-pendente">Pendente</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                        <tr>
+                            <td>197</td>
+                            <td>Não estão aparecendo os pacientes em espera</td>
+                            <td>Alexandre Feliciano</td>
+                            <td><span class="status-badge status-atendimento">Em atendimento</span></td>
+                            <td class="priority-medium">Média</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="table-container">
+                <h3 class="chart-title">Top Técnicos por Resolução</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Técnico</th>
+                            <th>Chamados Resolvidos</th>
+                            <th>Tempo Médio</th>
+                            <th>Taxa de Resolução</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gabriel Marques</td>
+                            <td>42</td>
+                            <td>16h</td>
+                            <td>95%</td>
+                        </tr>
+                        <tr>
+                            <td>Rodrigo Vieira</td>
+                            <td>28</td>
+                            <td>14h</td>
+                            <td>93%</td>
+                        </tr>
+                        <tr>
+                            <td>Oliveira Mateus</td>
+                            <td>25</td>
+                            <td>22h</td>
+                            <td>89%</td>
+                        </tr>
+                        <tr>
+                            <td>Alexandre Feliciano</td>
+                            <td>15</td>
+                            <td>19h</td>
+                            <td>92%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>Dashboard de Métricas de Chamados - Departamento de TI | Última atualização: 18/11/2025</p>
+    </footer>
 
-            <form class="cd">
-                <input type="email" name="login"  placeholder="Nome de usuario" id="" autofocus>
-                <input type="password" name="senha"  placeholder="Sua senha" id="" autofocus>
-                <input type="submit" value="entrar"> 
-            </form>
-            <p>Ainda não tem uma conta? <a href="">Criar conta</a></p>
-         
-         </div>
-    </section>
-
-   
+    <script>
+        // Gráfico de Status
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fechado', 'Pendente', 'Em Atendimento'],
+                datasets: [{
+                    data: [79, 4, 3],
+                    backgroundColor: [
+                        '#27ae60',
+                        '#f39c12',
+                        '#3498db'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Categorias
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: ['TOTVS', 'Computador', 'Impressora', 'Programas', 'Painéis de Senha', 'Outros'],
+                datasets: [{
+                    label: 'Quantidade de Chamados',
+                    data: [45, 22, 15, 5, 4, 5],
+                    backgroundColor: '#3498db',
+                    borderColor: '#2980b9',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Técnicos
+        const technicianCtx = document.getElementById('technicianChart').getContext('2d');
+        const technicianChart = new Chart(technicianCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Gabriel Marques', 'Rodrigo Vieira', 'Oliveira Mateus', 'Alexandre Feliciano', 'Outros'],
+                datasets: [{
+                    data: [42, 28, 25, 15, 6],
+                    backgroundColor: [
+                        '#3498db',
+                        '#2ecc71',
+                        '#e74c3c',
+                        '#f39c12',
+                        '#9b59b6'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Timeline
+        const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+        const timelineChart = new Chart(timelineCtx, {
+            type: 'line',
+            data: {
+                labels: ['01/11', '05/11', '10/11', '15/11', '18/11'],
+                datasets: [
+                    {
+                        label: 'Chamados Abertos',
+                        data: [8, 22, 45, 65, 86],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Chamados Resolvidos',
+                        data: [5, 18, 35, 60, 79],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
